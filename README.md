@@ -45,7 +45,5 @@ python simulator.py
 - **Ctrl+N** - New File
 - **Ctrl+O** - Open File
 - **Ctrl+S** - Save File
+Read "HOW TO USE.pdf" for Introduction, Usage Guide, Registers & Flags, Number Formats, Complete Instruction Set, Assembler Directives, Example Programs, Tips & Common Patterns 
 
-## Credits
-
-Developed by [gojonichan](https://github.com/gojonichan).
