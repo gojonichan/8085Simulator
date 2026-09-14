@@ -1,0 +1,496 @@
+# Intel 8085 Microprocessor Simulator - Lab Trainer Kit
+
+A comprehensive simulator with a graphical user interface that mimics a real 8085 trainer kit. Features a complete instruction set, a two-pass assembler, step execution, breakpoints, and a memory viewer.
+
+## Features
+
+- **Complete 8085 Instruction Set**: Supports all 246 opcodes.
+- **Two-pass Assembler**: Includes support for labels and assembler directives (ORG, EQU, DB, DW, DS, END).
+- **Execution Modes**: Step-by-step execution or continuous run with adjustable speed.
+- **Lab Trainer Kit Interface**: Features a hex keypad and a 7-segment display for authentic trainer kit experience.
+- **Memory Viewer & Editor**: View and edit 64KB of memory directly.
+- **I/O Port Simulation**: Interactive I/O port reading and writing.
+- **Syntax-highlighted Editor**: Built-in assembly editor with syntax highlighting and line numbers.
+- **Sample Programs**: Comes with over 12 built-in sample programs (e.g., Fibonacci, Bubble Sort, BCD Addition).
+
+## Requirements
+
+- Python 3.x
+- `tkinter` (usually included with standard Python installations)
+
+## How to Run
+
+Clone the repository and run the script:
+
+```bash
+python simulator.py
+```
+h
+---
+
+## Usage Guide
+
+### Writing Your First Program
+
+1. Open the simulator and type your assembly code in the **Editor** tab.
+2. Click **Assemble (F8)** to compile. Check the **Console** tab for errors.
+3. Click **Run (F5)** to execute continuously, or **Step (F6)** to execute one instruction at a time.
+4. View results in the **Registers** panel, **Flags** panel, or **Memory Viewer**.
+
+### Basic Program Structure
+
+Every program typically follows this pattern:
+
+```asm
+; Comments start with a semicolon
+    ORG 2000H           ; Set the starting address of the program
+
+    ; Your instructions go here
+    MVI A, 25H          ; Load a value into accumulator
+    STA 3000H           ; Store result at memory address 3000H
+    HLT                 ; Stop execution
+
+; Data section
+    ORG 2050H           ; Set the address for data
+    DB 05H, 0AH, 0FH   ; Define bytes in memory
+```
+
+### Trainer Kit Mode
+
+Use the **hex keypad** to enter addresses and data directly into memory, just like a real hardware trainer kit:
+
+1. Enter the memory address using hex keys.
+2. Press the appropriate function key to examine/modify memory.
+3. Use the 7-segment display to view addresses and data values.
+
+---
+
+## Keyboard Shortcuts
+
+| Shortcut   | Action          |
+|------------|-----------------|
+| **F8**     | Assemble        |
+| **F5**     | Run             |
+| **F6**     | Step (one instruction) |
+| **F7**     | Stop            |
+| **F9**     | Reset CPU       |
+| **Ctrl+N** | New File        |
+| **Ctrl+O** | Open File       |
+| **Ctrl+S** | Save File       |
+
+---
+
+## Registers & Flags
+
+### 8-bit Registers
+
+| Register | Description |
+|----------|-------------|
+| **A**    | Accumulator — primary register for arithmetic/logic operations |
+| **B**    | General purpose register (pairs with C) |
+| **C**    | General purpose register (pairs with B) |
+| **D**    | General purpose register (pairs with E) |
+| **E**    | General purpose register (pairs with D) |
+| **H**    | General purpose register (pairs with L, forms memory address) |
+| **L**    | General purpose register (pairs with H, forms memory address) |
+| **M**    | Not a real register — refers to the memory location pointed to by **HL** |
+
+### 16-bit Register Pairs
+
+| Pair      | Registers | Usage |
+|-----------|-----------|-------|
+| **B**     | B and C   | General purpose pair |
+| **D**     | D and E   | General purpose pair |
+| **H**     | H and L   | Memory pointer pair |
+| **SP**    | —         | Stack Pointer (16-bit) |
+| **PSW**   | A + Flags | Program Status Word (used with PUSH/POP) |
+
+### Flags
+
+The 8085 has 5 status flags that are set/cleared based on the result of operations:
+
+| Flag | Name            | Set When (= 1) |
+|------|-----------------|-----------------|
+| **S**  | Sign          | Bit 7 of the result is 1 (result is negative) |
+| **Z**  | Zero          | Result is zero |
+| **AC** | Auxiliary Carry | There is a carry from bit 3 to bit 4 |
+| **P**  | Parity        | Result has an even number of 1-bits |
+| **CY** | Carry         | There is a carry or borrow from bit 7 |
+
+---
+
+## Number Formats
+
+The assembler accepts numbers in three formats:
+
+| Format    | Syntax              | Example                     |
+|-----------|---------------------|-----------------------------|
+| **Hex**   | Suffix `H` or prefix `0x` | `0FFH`, `2000H`, `0x2000` |
+| **Decimal** | Plain number       | `255`, `100`               |
+| **Binary** | Suffix `B`          | `11111111B`, `1010B`       |
+
+> **Note:** Hex numbers starting with a letter (A–F) must be prefixed with `0`. For example, write `0FFH` not `FFH`.
+
+---
+
+## Complete Instruction Set Reference
+
+### Data Transfer Instructions
+
+These instructions move data between registers, memory, and I/O ports without modifying flags.
+
+| Instruction        | Operation                              | Description |
+|--------------------|----------------------------------------|-------------|
+| `MOV r1, r2`       | r1 ← r2                               | Copy register r2 to r1 |
+| `MVI r, data`      | r ← data                              | Load immediate 8-bit data to register |
+| `LDA addr`         | A ← [addr]                            | Load accumulator from memory address |
+| `STA addr`         | [addr] ← A                            | Store accumulator to memory address |
+| `LHLD addr`        | L ← [addr], H ← [addr+1]             | Load HL pair from memory |
+| `SHLD addr`        | [addr] ← L, [addr+1] ← H             | Store HL pair to memory |
+| `LXI rp, d16`      | rp ← d16                              | Load 16-bit immediate to register pair |
+| `LDAX rp`          | A ← [rp]                              | Load A from address in rp (B or D only) |
+| `STAX rp`          | [rp] ← A                              | Store A to address in rp (B or D only) |
+| `XCHG`             | DE ↔ HL                               | Exchange DE and HL pairs |
+
+### Arithmetic Instructions
+
+These instructions perform addition, subtraction, and increment/decrement. They affect all flags unless noted.
+
+| Instruction        | Operation                              | Description |
+|--------------------|----------------------------------------|-------------|
+| `ADD r`            | A ← A + r                             | Add register to A |
+| `ADC r`            | A ← A + r + CY                        | Add register to A with carry |
+| `SUB r`            | A ← A − r                             | Subtract register from A |
+| `SBB r`            | A ← A − r − CY                        | Subtract register from A with borrow |
+| `INR r`            | r ← r + 1                             | Increment register by 1 |
+| `DCR r`            | r ← r − 1                             | Decrement register by 1 |
+| `INX rp`           | rp ← rp + 1                           | Increment register pair (no flags affected) |
+| `DCX rp`           | rp ← rp − 1                           | Decrement register pair (no flags affected) |
+| `DAD rp`           | HL ← HL + rp                          | Add register pair to HL (only CY affected) |
+| `DAA`              | Decimal adjust A                       | Adjust A for BCD addition |
+| `ADI data`         | A ← A + data                          | Add immediate to A |
+| `ACI data`         | A ← A + data + CY                     | Add immediate to A with carry |
+| `SUI data`         | A ← A − data                          | Subtract immediate from A |
+| `SBI data`         | A ← A − data − CY                     | Subtract immediate from A with borrow |
+
+### Logical Instructions
+
+These instructions perform bitwise operations, comparisons, and rotations.
+
+| Instruction        | Operation                              | Description |
+|--------------------|----------------------------------------|-------------|
+| `ANA r`            | A ← A AND r                           | Logical AND register with A |
+| `XRA r`            | A ← A XOR r                           | Logical XOR register with A |
+| `ORA r`            | A ← A OR r                            | Logical OR register with A |
+| `CMP r`            | Compare A with r                       | Sets flags based on A − r, **A is unchanged** |
+| `ANI data`         | A ← A AND data                        | AND immediate with A |
+| `XRI data`         | A ← A XOR data                        | XOR immediate with A |
+| `ORI data`         | A ← A OR data                         | OR immediate with A |
+| `CPI data`         | Compare A with data                    | Sets flags based on A − data, **A is unchanged** |
+| `RLC`              | Rotate A left                          | Bit 7 → CY and bit 0 |
+| `RRC`              | Rotate A right                         | Bit 0 → CY and bit 7 |
+| `RAL`              | Rotate A left through carry            | 9-bit rotate: bit 7 → CY, old CY → bit 0 |
+| `RAR`              | Rotate A right through carry           | 9-bit rotate: bit 0 → CY, old CY → bit 7 |
+| `CMA`              | A ← NOT A                             | 1's complement of A |
+| `CMC`              | CY ← NOT CY                           | Complement carry flag |
+| `STC`              | CY ← 1                                | Set carry flag |
+
+### Branch Instructions
+
+These instructions change the flow of execution. Conditional branches check flag values.
+
+| Instruction        | Condition            | Description |
+|--------------------|----------------------|-------------|
+| `JMP addr`         | —                    | Jump unconditionally |
+| `JC addr`          | CY = 1               | Jump if carry |
+| `JNC addr`         | CY = 0               | Jump if no carry |
+| `JZ addr`          | Z = 1                | Jump if zero |
+| `JNZ addr`         | Z = 0                | Jump if not zero |
+| `JP addr`          | S = 0                | Jump if positive |
+| `JM addr`          | S = 1                | Jump if minus (negative) |
+| `JPE addr`         | P = 1                | Jump if parity even |
+| `JPO addr`         | P = 0                | Jump if parity odd |
+| `CALL addr`        | —                    | Call subroutine (push PC, jump to addr) |
+| `RET`              | —                    | Return from subroutine (pop PC) |
+| `PCHL`             | —                    | Jump to address in HL (PC ← HL) |
+| `RST n`            | —                    | Restart: call address n×8 (n = 0–7) |
+
+**Conditional CALL variants:** `CC`, `CNC`, `CZ`, `CNZ`, `CP`, `CM`, `CPE`, `CPO`
+**Conditional RET variants:** `RC`, `RNC`, `RZ`, `RNZ`, `RP`, `RM`, `RPE`, `RPO`
+
+### Stack & I/O Instructions
+
+| Instruction        | Operation                              | Description |
+|--------------------|----------------------------------------|-------------|
+| `PUSH rp`          | Stack ← rp                            | Push register pair onto stack |
+| `POP rp`           | rp ← Stack                            | Pop register pair from stack |
+| `XTHL`             | (SP) ↔ HL                             | Exchange top of stack with HL |
+| `SPHL`             | SP ← HL                               | Load SP from HL |
+| `IN port`          | A ← port                              | Read from input port into A |
+| `OUT port`         | port ← A                              | Write A to output port |
+
+> **rp** can be **B** (BC), **D** (DE), **H** (HL), or **PSW** (A + Flags)
+
+### Control Instructions
+
+| Instruction | Description |
+|-------------|-------------|
+| `NOP`       | No operation (does nothing, wastes 1 cycle) |
+| `HLT`       | Halt processor — stops execution |
+| `EI`        | Enable interrupts |
+| `DI`        | Disable interrupts |
+| `RIM`       | Read interrupt mask into A |
+| `SIM`       | Set interrupt mask from A |
+
+---
+
+## Assembler Directives
+
+Directives are commands to the assembler (not the CPU). They control where code/data is placed in memory.
+
+| Directive      | Example                    | Description |
+|----------------|----------------------------|-------------|
+| `ORG addr`     | `ORG 2000H`               | Set the origin — next instruction/data goes at this address |
+| `DB data`      | `DB 05H, 0AH, 0FH`       | Define byte(s) — store raw data in memory |
+| `DW data`      | `DW 2050H`                | Define word — store 16-bit value (low byte first) |
+| `DS count`     | `DS 10H`                  | Define storage — reserve `count` bytes of memory |
+| `EQU value`    | `COUNT EQU 05H`           | Equate — assign a constant value to a label |
+| `END`          | `END`                     | End of source code |
+
+### Labels
+
+Labels mark addresses in your program for jumps, calls, and data references:
+
+```asm
+LOOP:                      ; Define a label
+    DCR C                  ; Decrement counter
+    JNZ LOOP               ; Jump back to LOOP if not zero
+```
+
+- Labels end with a colon (`:`).
+- They can contain letters, digits, and underscores.
+- They must start with a letter or underscore.
+
+---
+
+## Example Programs
+
+### 1. Add Two Numbers
+
+```asm
+; Adds 25H and 1AH, stores result at 3000H
+    ORG 2000H
+
+    MVI A, 25H          ; Load first number into A
+    MVI B, 1AH          ; Load second number into B
+    ADD B                ; A = A + B = 3FH
+    STA 3000H           ; Store result at 3000H
+    HLT
+```
+
+### 2. Find Smallest Number in an Array
+
+```asm
+; Array count at 2050H, data from 2051H
+; Result (smallest) stored at 2060H
+    ORG 2000H
+
+    LDA 2050H           ; Load the count
+    DCR A                ; N-1 comparisons needed
+    MOV C, A             ; C = loop counter
+    LXI H, 2051H        ; HL points to first element
+    MOV A, M             ; A = first element (assume smallest)
+
+FIND:
+    INX H                ; Point to next element
+    CMP M                ; Compare A with current element
+    JC SKIP              ; If A < element, keep A (carry set)
+    MOV A, M             ; New smallest found
+SKIP:
+    DCR C                ; Decrement counter
+    JNZ FIND             ; Repeat
+    STA 2060H            ; Store smallest at 2060H
+    HLT
+
+; Test data
+    ORG 2050H
+    DB 05H                          ; Count = 5
+    DB 34H, 78H, 12H, 9AH, 56H    ; Array data
+```
+
+### 3. Bubble Sort (Ascending)
+
+```asm
+; Sorts N bytes starting at 2051H, count at 2050H
+    ORG 2000H
+
+    LDA 2050H           ; Load count N
+    DCR A                ; N-1 passes needed
+    MOV C, A             ; C = outer loop counter
+
+OUTER:
+    MOV D, C             ; D = inner loop counter
+    LXI H, 2051H        ; Point to start of array
+
+INNER:
+    MOV A, M             ; Load current element
+    INX H
+    CMP M                ; Compare with next element
+    JC NOSWAP            ; If current < next, no swap
+    JZ NOSWAP            ; If equal, no swap
+
+    MOV B, M             ; B = next element
+    MOV M, A             ; Store current in next position
+    DCX H
+    MOV M, B             ; Store next in current position
+    INX H
+
+NOSWAP:
+    DCR D
+    JNZ INNER
+    DCR C
+    JNZ OUTER
+    HLT
+
+; Test data
+    ORG 2050H
+    DB 05H                          ; Count = 5
+    DB 64H, 19H, 2DH, 07H, 48H    ; Array: 100, 25, 45, 7, 72
+```
+
+### 4. 8-bit Multiplication (Repeated Addition)
+
+```asm
+; Multiplies values at 2050H and 2051H
+; 16-bit result stored at 2052H-2053H
+    ORG 2000H
+
+    LDA 2050H           ; Load multiplicand
+    MOV B, A
+    LDA 2051H           ; Load multiplier
+    MOV C, A
+    MVI A, 00H           ; Clear accumulator
+    MVI D, 00H           ; Clear D for carry
+
+LOOP:
+    ADD B                ; Add multiplicand
+    JNC NOCARRY
+    INR D                ; Increment high byte on overflow
+NOCARRY:
+    DCR C                ; Decrement counter
+    JNZ LOOP
+
+    STA 2052H            ; Store low byte of result
+    MOV A, D
+    STA 2053H            ; Store high byte of result
+    HLT
+
+; Data
+    ORG 2050H
+    DB 05H               ; Multiplicand = 5
+    DB 04H               ; Multiplier = 4
+```
+
+### 5. Subroutine Call — Sum of Array
+
+```asm
+; Sums 5 bytes at 2050H using a subroutine, result at 2060H
+    ORG 2000H
+
+    LXI SP, 20FFH       ; Initialize stack pointer
+    LXI H, 2050H        ; Array address
+    MVI C, 05H           ; Count
+
+    CALL SUM             ; Call subroutine
+    STA 2060H            ; Store the sum
+    HLT
+
+; Subroutine: SUM
+; Input:  HL = array address, C = count
+; Output: A = sum
+SUM:
+    MVI A, 00H           ; Clear accumulator
+ADDNXT:
+    ADD M                ; Add array element
+    INX H                ; Next element
+    DCR C
+    JNZ ADDNXT
+    RET                  ; Return to caller
+
+; Data
+    ORG 2050H
+    DB 10H, 20H, 30H, 40H, 50H
+```
+
+### 6. I/O Port Demo
+
+```asm
+; Reads from port 01H, rotates left twice, outputs to port 02H
+    ORG 2000H
+
+    IN 01H               ; Read from input port 1
+    RLC                   ; Rotate left
+    RLC                   ; Rotate left again
+    OUT 02H              ; Output to port 2
+    HLT
+```
+
+---
+
+## Tips & Common Patterns
+
+### Storing an Array in Memory
+
+Use `ORG` to set the address and `DB` to define the data:
+
+```asm
+    ORG 2050H
+    DB 05H               ; Count (optional, but useful)
+    DB 11H, 22H, 33H, 44H, 55H   ; Array elements
+```
+
+### Looping Through an Array
+
+Use `HL` as a pointer and `C` as a counter:
+
+```asm
+    LXI H, 2051H        ; Point HL to first element
+    MVI C, 05H           ; Load count
+
+LOOP:
+    MOV A, M             ; Load current element into A
+    ; ... do something with A ...
+    INX H                ; Move to next element
+    DCR C                ; Decrement counter
+    JNZ LOOP             ; Repeat if not zero
+```
+
+### Comparing Two Numbers
+
+`CMP` subtracts without changing A, only sets flags:
+
+```asm
+    MOV A, M             ; Load first value
+    INX H
+    CMP M                ; Compare A with next value
+    JC LESS              ; Jump if A < M[HL]  (Carry = 1)
+    JZ EQUAL             ; Jump if A == M[HL] (Zero = 1)
+    ; otherwise A > M[HL]
+```
+
+### Using the Stack
+
+Always initialize SP before using `PUSH`, `POP`, or `CALL`:
+
+```asm
+    LXI SP, 20FFH       ; Stack grows downward from 20FFH
+    PUSH B               ; Save BC on stack
+    ; ... do work ...
+    POP B                ; Restore BC
+```
+
+---
+
+## Credits
+
+Developed by [gojonichan](https://github.com/gojonichan).
